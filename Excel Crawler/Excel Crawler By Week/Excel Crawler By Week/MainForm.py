@@ -305,6 +305,18 @@ class MainForm(Form):
 			7,
 			8
 		]
+		
+		reportHeaders = [
+			'Week',
+			'ATL',
+			'BDL',
+			'BWI',
+			'LAX',
+			'MCO',
+			'MIA',
+			'TPA',
+			'NPLD'
+		]
 	
 		def IsValidInvoice(path, filename):
 			seconds = os.path.getctime(path)
@@ -312,9 +324,16 @@ class MainForm(Form):
 			date = int(date)
 			periodIndex = filename.IndexOf("4")
 			if (periodIndex != -1):
-				weekNumber = filename.Substring(periodIndex + 4, 2)
+				try:
+					self.weekNumber = filename.Substring(periodIndex + 4, 2)
+					
+				except:
+					self._statusTextBox.AppendText( "Error with " + filename + " is this a quote?" )
+					self._statusTextBox.ScrollToCaret()
+					return False
+				
 			else:
-				weekNumber = 0
+				self.weekNumber = 0
 				
 			fromDate = self._weekFrom.SelectedItem
 			toDate = self._weekTo.SelectedItem
@@ -326,9 +345,15 @@ class MainForm(Form):
 				self._statusTextBox.AppendText(  "Skipping " + filename + " Please Convert " + filename +  "to the correct format \n \n" )
 				self._statusTextBox.ScrollToCaret()
 				#os.system("pause")
-			if date > 20130725 and temp_file_check == -1 and xls_check != -1 and master_check == -1 and weekNumber >= fromDate and weekNumber <= toDate:
-				return True
-			else:
+			try:
+				if date > 20130725 and temp_file_check == -1 and xls_check != -1 and master_check == -1 and self.weekNumber >= fromDate and self.weekNumber <= toDate:
+					return True
+				else:
+					return False
+				
+			except:
+				self._statusTextBox.AppendText( "Error with " + filename + " is this a quote?" )
+				self._statusTextBox.ScrollToCaret()
 				return False
 		
 		def WriteHeadings(titles, worksheet, save_loc):
@@ -345,16 +370,36 @@ class MainForm(Form):
 		
 		self.workbook = excel.Workbooks.Add()
 		self.worksheet = self.workbook.ActiveSheet
+		self.reportSheet = self.workbook.Worksheets.Add()
+		self.reportSheet.Name = "Report By Fac"
 		self.workbook.Application.DisplayAlerts = False
 		r = 2
 		c = 1
 		saveLoc = self._saveLocationTextBox.Text
 		dirToSearch = self._dirToSearchTextBox.Text
+		if "NPL Dedicated Invoices" in dirToSearch:
+			self.companyInvoiceType = "NPLD"
+		else:
+			self.companyInvoiceType = "NPL"
+			
 		if ( saveLoc == "" ):
 			MessageBox.Show( "Please Choose a Save Location" )
 			return
 		
+		fromDate = self._weekFrom.SelectedItem
+		toDate = self._weekTo.SelectedItem
+		count = fromDate
+		count = int(count)
+		self.totalCostList = []
+		self.weekNumberList = []
+		time.sleep(5.5)
+		while count < int(toDate) + 1:
+			self.totalCostList.append(0)
+			self.weekNumberList.append(str(count))
+			count = count + 1
+			
 		WriteHeadings(headings, self.worksheet, "test")
+		WriteHeadings(reportHeaders, self.reportSheet, "")
 		self._statusTextBox.Text = "Starting \n \n"
 		for path, subdir, files in os.walk(dirToSearch):
 			for filename in files:
@@ -374,6 +419,9 @@ class MainForm(Form):
 					for i in cell_write_control:
 						data = self._worksheet.Cells[1, i]
 						data = data.Value2
+						if i == 1:
+							self.totalCost = data
+							
 						if i == 3:
 							data = str(data)
 							customerCode = data
@@ -390,11 +438,30 @@ class MainForm(Form):
 						
 					fileNameColumn = len(headings)
 					WriteCell( r, fileNameColumn, self.worksheet, invoicePath)
+					if self.companyInvoiceType == "NPLD":
+						index = self.weekNumberList.index(self.weekNumber)
+						self.totalCostList[index] = self.totalCostList[index] + self.totalCost
+						print self.totalCostList
+						print self.weekNumberList
+						
+						#WriteCell( r, 9, self.reportSheet, self.totalCost )
+						#WriteCell( r, 1, self.reportSheet, self.weekNumber )
+					
 					r = r + 1
 					self._workbook.Close(False)
+		
+		if self.companyInvoiceType == "NPLD":
+			index = 0
+			for i in self.weekNumberList:
+				WriteCell( index + 2, 1, self.reportSheet, self.weekNumberList[index] )
+				WriteCell( index + 2, 9, self.reportSheet, str( self.totalCostList[index] ))
+				index += 1
+		
+		#else:
+			
+			
 		self.workbook.SaveAs(saveLoc)
 		self.workbook.Close(False)
 		System.Diagnostics.Process.Start(saveLoc)
 		self._statusTextBox.AppendText( "Finished" )
 		self._statusTextBox.ScrollToCaret()
-		MessageBox.Show( "All Done! Shawn is awesome :)" )
