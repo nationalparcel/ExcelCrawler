@@ -315,6 +315,7 @@ class MainForm(Form):
 			'MCO',
 			'MIA',
 			'TPA',
+			'Total:',
 			'NPLD'
 		]
 	
@@ -346,7 +347,7 @@ class MainForm(Form):
 				self._statusTextBox.ScrollToCaret()
 				#os.system("pause")
 			try:
-				if date > 20130725 and temp_file_check == -1 and xls_check != -1 and master_check == -1 and self.weekNumber >= fromDate and self.weekNumber <= toDate:
+				if date > 20130725 and temp_file_check == -1 and xls_check != -1 and master_check == -1 and self.weekNumber >= fromDate and self.weekNumber <= toDate and "VOID" not in filename :
 					return True
 				else:
 					return False
@@ -365,6 +366,14 @@ class MainForm(Form):
 				
 		def WriteCell(row, column, worksheet, data):
 			worksheet.Cells [row, column] = data
+			
+		def representsInt(s):
+			try:
+				int(s)
+				return True
+			
+			except ValueError:
+				return False
 			
 		#############End of Logic Functions################################
 		
@@ -390,12 +399,41 @@ class MainForm(Form):
 		toDate = self._weekTo.SelectedItem
 		count = fromDate
 		count = int(count)
-		self.totalCostList = []
-		self.weekNumberList = []
+		self.atlWeekNumberList = []
+		self.bdlWeekNumberList = []
+		self.bwiWeekNumberList = []
+		self.laxWeekNumberList = []
+		self.mcoWeekNumberList = []
+		self.miaWeekNumberList = []
+		self.tpaWeekNumberList = []
+		self.npldWeekNumberList = []
+		
+		self.atlTotalCostList = []
+		self.bdlTotalCostList = []
+		self.bwiTotalCostList = []
+		self.laxTotalCostList = []
+		self.mcoTotalCostList = []
+		self.miaTotalCostList = []
+		self.tpaTotalCostList = []
+		self.npldTotalCostList = []
 		time.sleep(5.5)
 		while count < int(toDate) + 1:
-			self.totalCostList.append(0)
-			self.weekNumberList.append(str(count))
+			self.atlTotalCostList.append(0)
+			self.bdlTotalCostList.append(0)
+			self.bwiTotalCostList.append(0)
+			self.laxTotalCostList.append(0)
+			self.mcoTotalCostList.append(0)
+			self.miaTotalCostList.append(0)
+			self.tpaTotalCostList.append(0)
+			self.npldTotalCostList.append(0)
+			self.atlWeekNumberList.append(str(count))
+			self.bdlWeekNumberList.append(str(count))
+			self.bwiWeekNumberList.append(str(count))
+			self.laxWeekNumberList.append(str(count))
+			self.mcoWeekNumberList.append(str(count))
+			self.miaWeekNumberList.append(str(count))
+			self.tpaWeekNumberList.append(str(count))
+			self.npldWeekNumberList.append(str(count))
 			count = count + 1
 			
 		WriteHeadings(headings, self.worksheet, "test")
@@ -420,7 +458,11 @@ class MainForm(Form):
 						data = self._worksheet.Cells[1, i]
 						data = data.Value2
 						if i == 1:
-							self.totalCost = data
+							if representsInt( data ) == True:
+								self.totalCost = data
+								
+							else:
+								selftotalCost = 0
 							
 						if i == 3:
 							data = str(data)
@@ -435,31 +477,114 @@ class MainForm(Form):
 							range.NumberFormat = "MM/DD/YYYY"
 							
 						WriteCell( r, i, self.worksheet, data )
-						
+					
 					fileNameColumn = len(headings)
 					WriteCell( r, fileNameColumn, self.worksheet, invoicePath)
-					if self.companyInvoiceType == "NPLD":
-						index = self.weekNumberList.index(self.weekNumber)
-						self.totalCostList[index] = self.totalCostList[index] + self.totalCost
-						print self.totalCostList
-						print self.weekNumberList
+					print path
+					if "NPL Dedicated" in path:
+						index = self.npldWeekNumberList.index(self.weekNumber)
+						self.npldTotalCostList[index] = self.npldTotalCostList[index] + int(self.totalCost)
 						
-						#WriteCell( r, 9, self.reportSheet, self.totalCost )
-						#WriteCell( r, 1, self.reportSheet, self.weekNumber )
+					if "ATLANTA" in path:
+						index = self.atlWeekNumberList.index(self.weekNumber)
+						self.atlTotalCostList[index] = self.atlTotalCostList[index] + int(self.totalCost)
+						
+					if "BDL" in path:
+						index = self.bdlWeekNumberList.index(self.weekNumber)
+						self.bdlTotalCostList[index] = self.bdlTotalCostList[index] + int(self.totalCost)
+						
+					if "BALTIMORE" in path:
+						index = self.bwiWeekNumberList.index(self.weekNumber)
+						self.bwiTotalCostList[index] = self.bwiTotalCostList[index] + int(self.totalCost)
+						
+					if "LOS ANGELES" in path:
+						index = self.laxWeekNumberList.index(self.weekNumber)
+						self.laxTotalCostList[index] = self.laxTotalCostList[index] + int(self.totalCost)
+						
+					if "ORLANDO" in path:
+						index = self.mcoWeekNumberList.index(self.weekNumber)
+						self.mcoTotalCostList[index] = self.mcoTotalCostList[index] + int(self.totalCost)
+						
+					if "MIAMI" in path:
+						index = self.miaWeekNumberList.index(self.weekNumber)
+						self.miaTotalCostList[index] = self.miaTotalCostList[index] + int(self.totalCost)
+						
+					if "TAMPA" in path:
+						index = self.tpaWeekNumberList.index(self.weekNumber)
+						self.tpaTotalCostList[index] = self.tpaTotalCostList[index] + int(self.totalCost)
 					
 					r = r + 1
 					self._workbook.Close(False)
 		
-		if self.companyInvoiceType == "NPLD":
-			index = 0
-			for i in self.weekNumberList:
-				WriteCell( index + 2, 1, self.reportSheet, self.weekNumberList[index] )
-				WriteCell( index + 2, 9, self.reportSheet, str( self.totalCostList[index] ))
-				index += 1
+		index = 0
+		for i in self.npldWeekNumberList:
+			WriteCell( index + 2, 1, self.reportSheet, self.npldWeekNumberList[index] )
+			WriteCell( index + 2, 10, self.reportSheet, str( self.npldTotalCostList[index] ))
+			WriteCell( index + 2, 2, self.reportSheet, str( self.atlTotalCostList[index] ))
+			WriteCell( index + 2, 3, self.reportSheet, str( self.bdlTotalCostList[index] ))
+			WriteCell( index + 2, 4, self.reportSheet, str( self.bwiTotalCostList[index] ))
+			WriteCell( index + 2, 5, self.reportSheet, str( self.laxTotalCostList[index] ))
+			WriteCell( index + 2, 6, self.reportSheet, str( self.mcoTotalCostList[index] ))
+			WriteCell( index + 2, 7, self.reportSheet, str( self.miaTotalCostList[index] ))
+			WriteCell( index + 2, 8, self.reportSheet, str( self.tpaTotalCostList[index] ))
+			index += 1
 		
-		#else:
+		def totalCostLoop( list ):
+			totalCostReturn = 0
+			for item in list:
+				totalCostReturn = totalCostReturn + item
 			
+			return totalCostReturn
+
+		WriteCell( index + 2, 1, self.reportSheet, "Total:" )
+		grandTotal = 0
+		
+		atlTotal = totalCostLoop( self.atlTotalCostList )
+		#grandTotal = grandTotal + atlTotal
+		WriteCell( index + 2, 2, self.reportSheet, atlTotal )
+		
+		bdlTotal = totalCostLoop( self.bdlTotalCostList )
+		#grandTotal = grandTotal + bdlTotal
+		WriteCell( index + 2, 3, self.reportSheet, bdlTotal )
+		
+		bwiTotal = totalCostLoop( self.bwiTotalCostList )
+		#grandTotal = grandTotal + bwiTotal
+		WriteCell( index + 2, 4, self.reportSheet, bwiTotal )
+		
+		laxTotal = totalCostLoop( self.laxTotalCostList )
+		#grandTotal = grandTotal + laxTotal
+		WriteCell( index + 2, 5, self.reportSheet, laxTotal )
+		
+		mcoTotal = totalCostLoop( self.mcoTotalCostList )
+		#grandTotal = grandTotal + mcoTotal
+		WriteCell( index + 2, 6, self.reportSheet, mcoTotal )
+		
+		miaTotal = totalCostLoop( self.miaTotalCostList )
+		#grandTotal = grandTotal + miaTotal
+		WriteCell( index + 2, 7, self.reportSheet, miaTotal )
+		
+		tpaTotal = totalCostLoop( self.tpaTotalCostList )
+		#grandTotal = grandTotal + tpaTotal
+		WriteCell( index + 2, 8, self.reportSheet, tpaTotal )
+		
+		npldTotal = totalCostLoop( self.npldTotalCostList )
+		WriteCell( index + 2, 10, self.reportSheet, npldTotal )
+		
+		weekTotal = 0
+		for( i, self.npldWeekNumberList ) in enumerate( self.npldWeekNumberList ):
+			weekTotal = weekTotal + self.atlTotalCostList[ i ]
+			weekTotal = weekTotal + self.bdlTotalCostList[ i ]
+			weekTotal = weekTotal + self.bwiTotalCostList[ i ]
+			weekTotal = weekTotal + self.laxTotalCostList[ i ]
+			weekTotal = weekTotal + self.mcoTotalCostList[ i ]
+			weekTotal = weekTotal + self.miaTotalCostList[ i ]
+			weekTotal = weekTotal + self.tpaTotalCostList[ i ]
+			WriteCell( i + 2, 9, self.reportSheet, weekTotal )
+			grandTotal = grandTotal + weekTotal
+			weekTotal = 0
 			
+		WriteCell( index + 2, 9, self.reportSheet, grandTotal )
+
 		self.workbook.SaveAs(saveLoc)
 		self.workbook.Close(False)
 		System.Diagnostics.Process.Start(saveLoc)

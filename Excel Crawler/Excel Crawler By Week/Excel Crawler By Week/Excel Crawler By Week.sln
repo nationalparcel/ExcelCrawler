@@ -1,0 +1,18 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+# SharpDevelop 4.4
+Project("{FD48973F-F585-4F70-812B-4D0503B36CE9}") = "Excel Crawler By Week", "Excel Crawler By Week.pyproj", "{0D7FD311-7E2F-4CAE-9978-ECBC4A2DCD25}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0D7FD311-7E2F-4CAE-9978-ECBC4A2DCD25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D7FD311-7E2F-4CAE-9978-ECBC4A2DCD25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D7FD311-7E2F-4CAE-9978-ECBC4A2DCD25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D7FD311-7E2F-4CAE-9978-ECBC4A2DCD25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+EndGlobal
